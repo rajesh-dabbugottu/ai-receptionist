@@ -28,6 +28,7 @@ app.add_middleware(
         "http://127.0.0.1:4200",
         "http://localhost:4201",
         "http://127.0.0.1:4201",
+        "https://ai-receptionist-1-g606.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -39,6 +40,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:4200",
         "http://127.0.0.1:4200",
+         "https://ai-receptionist-1-g606.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
