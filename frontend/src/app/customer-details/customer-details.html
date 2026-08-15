@@ -1,0 +1,98 @@
+<div class="details-page">
+  <header class="page-header">
+    <div>
+      <a class="back-link" routerLink="/admin/customers">← Customers</a>
+      <p class="eyebrow">Customer profile</p>
+      <h1>Customer details</h1>
+    </div>
+
+    @if (customer() && !isEditing()) {
+      <div class="header-actions">
+        <button type="button" class="secondary-button" (click)="startEditing()">Edit customer</button>
+        <button type="button" class="danger-button" [disabled]="isDeleting()" (click)="deleteCustomer()">
+          {{ isDeleting() ? 'Deleting...' : 'Delete' }}
+        </button>
+      </div>
+    }
+  </header>
+
+  @if (errorMessage()) {
+    <div class="alert error-alert">{{ errorMessage() }}</div>
+  }
+  @if (successMessage()) {
+    <div class="alert success-alert">{{ successMessage() }}</div>
+  }
+
+  @if (isLoading()) {
+    <div class="state-card"><div class="spinner"></div><p>Loading customer...</p></div>
+  } @else if (customer(); as currentCustomer) {
+    <section class="profile-grid">
+      <article class="profile-card">
+        <div class="profile-heading">
+          <div class="avatar">{{ getInitials(currentCustomer.name) }}</div>
+          <div>
+            <h2>{{ currentCustomer.name }}</h2>
+            <p>Customer since {{ formatDate(currentCustomer.created_at) }}</p>
+          </div>
+        </div>
+
+        @if (isEditing()) {
+          <div class="edit-form">
+            <label><span>Name *</span><input type="text" [(ngModel)]="editName" /></label>
+            <label><span>Phone *</span><input type="tel" [(ngModel)]="editPhone" /></label>
+            <label><span>Email</span><input type="email" [(ngModel)]="editEmail" /></label>
+            <label><span>Internal notes</span><textarea rows="5" [(ngModel)]="editNotes"></textarea></label>
+            <div class="form-actions">
+              <button type="button" class="secondary-button" (click)="cancelEditing()">Cancel</button>
+              <button type="button" class="primary-button" [disabled]="isSaving()" (click)="saveCustomer()">
+                {{ isSaving() ? 'Saving...' : 'Save changes' }}
+              </button>
+            </div>
+          </div>
+        } @else {
+          <dl class="details-list">
+            <div><dt>Phone</dt><dd>{{ currentCustomer.phone || 'Not provided' }}</dd></div>
+            <div><dt>Email</dt><dd>{{ currentCustomer.email || 'Not provided' }}</dd></div>
+            <div><dt>Total appointments</dt><dd>{{ currentCustomer.total_appointments }}</dd></div>
+            <div><dt>Last appointment</dt><dd>{{ formatDate(currentCustomer.last_appointment_date) }}</dd></div>
+          </dl>
+          <div class="notes-box">
+            <h3>Internal notes</h3>
+            <p>{{ currentCustomer.notes || 'No notes have been added.' }}</p>
+          </div>
+        }
+      </article>
+
+      <article class="appointments-card">
+        <div class="card-heading">
+          <div><h2>Appointment history</h2><p>{{ appointments().length }} appointment(s)</p></div>
+        </div>
+
+        @if (appointments().length === 0) {
+          <div class="empty-state"><div>📅</div><h3>No appointment history</h3></div>
+        } @else {
+          <div class="appointment-list">
+            @for (appointment of appointments(); track appointment.id) {
+              <div class="appointment-item">
+                <div class="date-box">
+                  <strong>{{ formatDate(appointment.appointment_date) }}</strong>
+                  <span>{{ appointment.appointment_time }}</span>
+                </div>
+                <div class="appointment-info">
+                  <h3>{{ appointment.service }}</h3>
+                  <p>Source: {{ appointment.source || 'website' }}</p>
+                  @if (appointment.conversation_id) {
+                    <a [routerLink]="['/admin/conversations']">View related conversation</a>
+                  }
+                </div>
+                <span class="status-badge" [class]="'status-badge ' + appointment.status">
+                  {{ formatStatus(appointment.status) }}
+                </span>
+              </div>
+            }
+          </div>
+        }
+      </article>
+    </section>
+  }
+</div>

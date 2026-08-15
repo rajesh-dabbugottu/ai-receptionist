@@ -1,0 +1,344 @@
+<div class="dashboard-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">AI</div>
+
+      <div>
+        <h2>Receptionist</h2>
+        <p>Admin portal</p>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" routerLink="/admin">
+        <span class="nav-icon">⌂</span>
+        Dashboard
+      </a>
+
+      <a class="nav-item" routerLink="/admin">
+        <span class="nav-icon">▣</span>
+        Appointments
+      </a>
+
+      <a class="nav-item" routerLink="/admin/customers">
+        <span class="nav-icon">◎</span>
+        Customers
+      </a>
+
+      <a class="nav-item" routerLink="/admin/conversations">
+        <span class="nav-icon">◌</span>
+        Conversations
+      </a>
+
+      <a class="nav-item" routerLink="/admin/business-settings">
+        <span class="nav-icon">S</span>
+  Business Settings
+</a>
+    </nav>
+
+    <div class="business-card">
+      <div class="business-logo">DS</div>
+
+      <div>
+        <strong>Demo Salon</strong>
+        <span>London</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="dashboard-main">
+    <header class="top-header">
+      <div>
+        <p class="eyebrow">Overview</p>
+        <h1>Appointment Dashboard</h1>
+        <p class="header-description">
+          Manage customer bookings and appointment requests.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <button type="button" class="refresh-button" [disabled]="isLoading()" (click)="loadAppointments()">
+          <span class="refresh-icon" [class.rotating]="isLoading()">
+            ↻
+          </span>
+
+          {{ isLoading() ? 'Refreshing' : 'Refresh' }}
+        </button>
+
+        <div class="admin-profile">
+          <div class="admin-avatar">RD</div>
+
+          <div>
+            <strong>Rajesh</strong>
+            <span>Administrator</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    @if (errorMessage()) {
+    <div class="alert alert-error">
+      <span>!</span>
+      {{ errorMessage() }}
+    </div>
+    }
+
+    @if (successMessage()) {
+    <div class="alert alert-success">
+      <span>✓</span>
+      {{ successMessage() }}
+    </div>
+    }
+
+    <section class="stats-grid">
+      <article class="stat-card">
+        <div class="stat-heading">
+          <span>Total appointments</span>
+          <div class="stat-icon purple">▣</div>
+        </div>
+
+        <strong>{{ totalAppointments() }}</strong>
+        <p>All booking requests</p>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-heading">
+          <span>Pending</span>
+          <div class="stat-icon orange">◷</div>
+        </div>
+
+        <strong>{{ pendingAppointments() }}</strong>
+        <p>Waiting for confirmation</p>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-heading">
+          <span>Confirmed</span>
+          <div class="stat-icon green">✓</div>
+        </div>
+
+        <strong>{{ confirmedAppointments() }}</strong>
+        <p>Approved appointments</p>
+      </article>
+
+      <article class="stat-card">
+        <div class="stat-heading">
+          <span>Today</span>
+          <div class="stat-icon blue">◫</div>
+        </div>
+
+        <strong>{{ todayAppointments() }}</strong>
+        <p>Appointments scheduled today</p>
+      </article>
+    </section>
+
+    <section class="appointments-panel">
+      <div class="panel-header">
+        <div>
+          <h2>Appointments</h2>
+          <p>
+            {{ filteredAppointments().length }}
+            appointment(s) displayed
+          </p>
+        </div>
+
+        <div class="filters">
+          <label class="search-box">
+            <span>⌕</span>
+
+            <input type="search" placeholder="Search customer or service" [ngModel]="searchTerm()"
+              (ngModelChange)="updateSearch($event)" />
+          </label>
+
+          <select aria-label="Filter appointments by status" [ngModel]="selectedStatus()"
+            (ngModelChange)="updateStatusFilter($event)">
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="completed">Completed</option>
+          </select>
+        </div>
+      </div>
+
+      @if (isLoading()) {
+      <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Loading appointments...</p>
+      </div>
+      } @else if (filteredAppointments().length === 0) {
+      <div class="empty-state">
+        <div class="empty-icon">▣</div>
+
+        <h3>No appointments found</h3>
+
+        <p>
+          There are no appointments matching your filters.
+        </p>
+      </div>
+      } @else {
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Service</th>
+              <th>Schedule</th>
+              <th>Status</th>
+              <th class="actions-heading">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            @for (
+            appointment of filteredAppointments();
+            track appointment.id
+            ) {
+            <tr>
+              <td>
+                <div class="customer-cell">
+                  <div class="customer-avatar">
+                    {{
+                    getInitials(
+                    appointment.customer_name
+                    )
+                    }}
+                  </div>
+
+                  <div>
+                    <strong>
+                      {{ appointment.customer_name }}
+                    </strong>
+
+                    <span>
+                      ID:
+                      {{ appointment.id.slice(0, 8) }}
+                    </span>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <div class="contact-cell">
+                  <strong>
+                    {{ appointment.customer_phone }}
+                  </strong>
+
+                  <span>
+                    {{ appointment.source }}
+                  </span>
+                </div>
+              </td>
+
+              <td>
+                <span class="service-chip">
+                  {{ appointment.service }}
+                </span>
+              </td>
+
+              <td>
+                <div class="schedule-cell">
+                  <strong>
+                    {{
+                    formatDate(
+                    appointment.appointment_date
+                    )
+                    }}
+                  </strong>
+
+                  <span>
+                    {{
+                    formatTime(
+                    appointment.appointment_time
+                    )
+                    }}
+                  </span>
+                </div>
+              </td>
+
+              <td>
+                <span class="status-badge" [class.status-pending]="
+                        appointment.status === 'pending'
+                      " [class.status-confirmed]="
+                        appointment.status === 'confirmed'
+                      " [class.status-cancelled]="
+                        appointment.status === 'cancelled'
+                      " [class.status-completed]="
+                        appointment.status === 'completed'
+                      ">
+                  <span class="status-dot"></span>
+                  {{ appointment.status }}
+                </span>
+              </td>
+
+              <td>
+                <div class="action-buttons">
+                  @if (
+                  appointment.status === 'pending'
+                  ) {
+                  <button type="button" class="action-button confirm-button" [disabled]="
+                            updatingAppointmentId() ===
+                            appointment.id
+                          " (click)="
+                            updateAppointmentStatus(
+                              appointment,
+                              'confirmed'
+                            )
+                          ">
+                    Confirm
+                  </button>
+
+                  <button type="button" class="action-button cancel-button" [disabled]="
+                            updatingAppointmentId() ===
+                            appointment.id
+                          " (click)="
+                            updateAppointmentStatus(
+                              appointment,
+                              'cancelled'
+                            )
+                          ">
+                    Cancel
+                  </button>
+                  } @else if (
+                  appointment.status === 'confirmed'
+                  ) {
+                  <button type="button" class="action-button complete-button" [disabled]="
+                            updatingAppointmentId() ===
+                            appointment.id
+                          " (click)="
+                            updateAppointmentStatus(
+                              appointment,
+                              'completed'
+                            )
+                          ">
+                    Complete
+                  </button>
+
+                  <button type="button" class="action-button cancel-button" [disabled]="
+                            updatingAppointmentId() ===
+                            appointment.id
+                          " (click)="
+                            updateAppointmentStatus(
+                              appointment,
+                              'cancelled'
+                            )
+                          ">
+                    Cancel
+                  </button>
+                  } @else {
+                  <span class="no-actions">
+                    No actions
+                  </span>
+                  }
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </section>
+  </main>
+</div>

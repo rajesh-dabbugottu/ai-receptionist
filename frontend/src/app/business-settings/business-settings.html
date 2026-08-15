@@ -1,0 +1,407 @@
+<section class="settings-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">
+        Administration
+      </p>
+
+      <h1>
+        Business Settings
+      </h1>
+
+      <p>
+        Manage business information, working
+        hours and available services.
+      </p>
+    </div>
+  </header>
+
+  @if (successMessage()) {
+    <div class="alert success">
+      {{ successMessage() }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="alert error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-card">
+      Loading business settings...
+    </div>
+  } @else {
+    <form
+      [formGroup]="settingsForm"
+      (ngSubmit)="saveSettings()"
+      class="settings-form"
+    >
+      <div class="settings-card">
+        <div class="card-heading">
+          <div>
+            <h2>Business information</h2>
+
+            <p>
+              These details will be used by
+              the AI receptionist.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <label>
+            <span>Business name *</span>
+
+            <input
+              type="text"
+              formControlName="business_name"
+              placeholder="Demo Salon"
+            />
+          </label>
+
+          <label>
+            <span>Business type *</span>
+
+            <input
+              type="text"
+              formControlName="business_type"
+              placeholder="Hair and beauty salon"
+            />
+          </label>
+
+          <label class="full-width">
+            <span>Address</span>
+
+            <input
+              type="text"
+              formControlName="address"
+              placeholder="London"
+            />
+          </label>
+
+          <label>
+            <span>Phone</span>
+
+            <input
+              type="tel"
+              formControlName="phone"
+              placeholder="+44..."
+            />
+          </label>
+
+          <label>
+            <span>Email</span>
+
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="info@example.com"
+            />
+          </label>
+
+          <label>
+            <span>Website</span>
+
+            <input
+              type="url"
+              formControlName="website"
+              placeholder="https://example.com"
+            />
+          </label>
+
+          <label>
+            <span>Time zone *</span>
+
+            <select formControlName="timezone">
+              <option value="Europe/London">
+                Europe/London
+              </option>
+
+              <option value="Europe/Dublin">
+                Europe/Dublin
+              </option>
+
+              <option value="Asia/Kolkata">
+                Asia/Kolkata
+              </option>
+
+              <option value="America/New_York">
+                America/New_York
+              </option>
+
+              <option value="America/Los_Angeles">
+                America/Los_Angeles
+              </option>
+            </select>
+          </label>
+
+          <label class="full-width">
+            <span>Welcome message *</span>
+
+            <textarea
+              rows="3"
+              formControlName="welcome_message"
+              placeholder="Welcome. How can I help you?"
+            ></textarea>
+          </label>
+
+          <label class="full-width">
+            <span>Booking message</span>
+
+            <textarea
+              rows="3"
+              formControlName="booking_message"
+              placeholder="Your appointment remains pending..."
+            ></textarea>
+          </label>
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="card-heading">
+          <div>
+            <h2>Working hours</h2>
+
+            <p>
+              Set the normal opening hours
+              for each day.
+            </p>
+          </div>
+        </div>
+
+        <div
+          class="working-hours"
+          formGroupName="working_hours"
+        >
+          @for (day of days; track day.key) {
+            <div
+              class="working-day"
+              [formGroupName]="day.key"
+            >
+              <div class="day-name">
+                {{ day.label }}
+              </div>
+
+              <label class="switch-row">
+                <input
+                  type="checkbox"
+                  formControlName="open"
+                />
+
+                <span>
+                  {{
+                    getDayGroup(day.key)
+                      .get('open')?.value
+                      ? 'Open'
+                      : 'Closed'
+                  }}
+                </span>
+              </label>
+
+              @if (
+                getDayGroup(day.key)
+                  .get('open')?.value
+              ) {
+                <input
+                  type="time"
+                  formControlName="start"
+                />
+
+                <span class="time-separator">
+                  to
+                </span>
+
+                <input
+                  type="time"
+                  formControlName="end"
+                />
+              } @else {
+                <div class="closed-label">
+                  Closed
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="saving()"
+        >
+          {{
+            saving()
+              ? 'Saving...'
+              : 'Save business settings'
+          }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <div class="settings-card services-card">
+    <div class="card-heading">
+      <div>
+        <h2>Services</h2>
+
+        <p>
+          These services will later be used
+          dynamically by the AI receptionist.
+        </p>
+      </div>
+    </div>
+
+    <form
+      [formGroup]="serviceForm"
+      (ngSubmit)="saveService()"
+      class="service-form"
+    >
+      <div class="form-grid">
+        <label>
+          <span>Service name *</span>
+
+          <input
+            type="text"
+            formControlName="name"
+            placeholder="Facial"
+          />
+        </label>
+
+        <label>
+          <span>Duration in minutes *</span>
+
+          <input
+            type="number"
+            min="5"
+            formControlName="duration_minutes"
+          />
+        </label>
+
+        <label class="full-width">
+          <span>Description</span>
+
+          <textarea
+            rows="3"
+            formControlName="description"
+            placeholder="Optional service description"
+          ></textarea>
+        </label>
+
+        <label class="checkbox-field">
+          <input
+            type="checkbox"
+            formControlName="active"
+          />
+
+          <span>Service is active</span>
+        </label>
+      </div>
+
+      <div class="service-form-actions">
+        <button
+          type="submit"
+          class="primary-button"
+          [disabled]="serviceSaving()"
+        >
+          {{
+            serviceSaving()
+              ? 'Saving...'
+              : editingServiceId()
+                ? 'Update service'
+                : 'Add service'
+          }}
+        </button>
+
+        @if (editingServiceId()) {
+          <button
+            type="button"
+            class="secondary-button"
+            (click)="resetServiceForm()"
+          >
+            Cancel edit
+          </button>
+        }
+      </div>
+    </form>
+
+    <div class="service-list">
+      @if (services().length === 0) {
+        <div class="empty-state">
+          No services have been added.
+        </div>
+      }
+
+      @for (
+        service of services();
+        track service.id
+      ) {
+        <article class="service-item">
+          <div class="service-main">
+            <div class="service-title-row">
+              <h3>
+                {{ service.name }}
+              </h3>
+
+              <span
+                class="status-badge"
+                [class.inactive]="!service.active"
+              >
+                {{
+                  service.active
+                    ? 'Active'
+                    : 'Inactive'
+                }}
+              </span>
+            </div>
+
+            <p>
+              {{
+                service.description ||
+                'No description provided.'
+              }}
+            </p>
+
+            <small>
+              {{ service.duration_minutes }}
+              minutes
+            </small>
+          </div>
+
+          <div class="service-actions">
+            <button
+              type="button"
+              class="text-button"
+              (click)="editService(service)"
+            >
+              Edit
+            </button>
+
+            <button
+              type="button"
+              class="text-button"
+              (click)="toggleService(service)"
+            >
+              {{
+                service.active
+                  ? 'Disable'
+                  : 'Enable'
+              }}
+            </button>
+
+            <button
+              type="button"
+              class="text-button danger"
+              (click)="deleteService(service)"
+            >
+              Delete
+            </button>
+          </div>
+        </article>
+      }
+    </div>
+  </div>
+</section>

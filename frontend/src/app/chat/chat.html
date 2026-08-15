@@ -1,0 +1,354 @@
+<div class="chat-page">
+  <header class="site-header">
+    <a class="brand" routerLink="/">
+      <span class="brand-logo">AI</span>
+
+      <span class="brand-text">
+        <strong>AI Receptionist</strong>
+        <small>Available 24/7</small>
+      </span>
+    </a>
+
+    <nav class="header-actions">
+      <a
+        class="form-booking-link"
+        routerLink="/book-appointment"
+      >
+        Book with form
+      </a>
+
+      <button
+        type="button"
+        class="new-chat-button"
+        (click)="startNewConversation()"
+      >
+        New chat
+      </button>
+    </nav>
+  </header>
+
+  <main class="chat-layout">
+    <section class="welcome-panel">
+      <p class="eyebrow">
+        Smart customer support
+      </p>
+
+      <h1>
+        Talk to our AI receptionist
+      </h1>
+
+      <p class="welcome-description">
+        Ask questions, learn about our services
+        or book an appointment through a simple
+        conversation.
+      </p>
+
+      <div class="feature-list">
+        <div class="feature">
+          <span class="feature-icon">24</span>
+
+          <div>
+            <strong>Available 24/7</strong>
+            <p>
+              Get help at any time.
+            </p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <span class="feature-icon">✓</span>
+
+          <div>
+            <strong>Book appointments</strong>
+            <p>
+              Choose your service, date and time.
+            </p>
+          </div>
+        </div>
+
+        <div class="feature">
+          <span class="feature-icon">AI</span>
+
+          <div>
+            <strong>Instant answers</strong>
+            <p>
+              Ask about services and opening hours.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="privacy-note">
+        <span>🔒</span>
+
+        <p>
+          Your conversation is securely stored
+          so the business can assist you.
+        </p>
+      </div>
+    </section>
+
+    <section class="chat-card">
+      <header class="chat-header">
+        <div class="receptionist-profile">
+          <div class="assistant-avatar">
+            AI
+
+            <span class="online-indicator"></span>
+          </div>
+
+          <div>
+            <h2>AI Receptionist</h2>
+
+            <p>
+              <span class="online-dot"></span>
+              Online now
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="header-new-chat"
+          title="Start new conversation"
+          (click)="startNewConversation()"
+        >
+          ↻
+        </button>
+      </header>
+
+      <div
+        #messagesContainer
+        class="messages-container"
+      >
+        <div class="conversation-date">
+          <span>Today</span>
+        </div>
+
+        @for (
+          chatMessage of messages();
+          track chatMessage.id
+        ) {
+          <div
+            class="message-row"
+            [class.customer-row]="
+              chatMessage.sender === 'customer'
+            "
+            [class.assistant-row]="
+              chatMessage.sender === 'assistant'
+            "
+          >
+            @if (
+              chatMessage.sender === 'assistant'
+            ) {
+              <div class="small-avatar">
+                AI
+              </div>
+            }
+
+            <div
+              class="message-content"
+              [class.customer-message]="
+                chatMessage.sender === 'customer'
+              "
+              [class.assistant-message]="
+                chatMessage.sender === 'assistant'
+              "
+            >
+              <p>
+                {{ chatMessage.message }}
+              </p>
+
+              <time>
+                {{
+                  formatTime(
+                    chatMessage.createdAt
+                  )
+                }}
+              </time>
+            </div>
+          </div>
+        }
+
+        @if (isSending()) {
+          <div
+            class="message-row assistant-row"
+          >
+            <div class="small-avatar">
+              AI
+            </div>
+
+            <div
+              class="typing-message"
+              aria-label="AI is typing"
+            >
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        }
+
+        @if (appointmentId()) {
+          <div class="appointment-success">
+            <div class="success-icon">
+              ✓
+            </div>
+
+            <div>
+              <strong>
+                Appointment created
+              </strong>
+
+              <p>
+                Reference:
+                {{ appointmentId() }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+
+      @if (
+        messages().length === 1 &&
+        !isSending()
+      ) {
+        <div class="suggestions">
+          <p>Try asking:</p>
+
+          <div class="suggestion-buttons">
+            @for (
+              suggestion of suggestedMessages;
+              track suggestion
+            ) {
+              <button
+                type="button"
+                (click)="
+                  sendSuggestedMessage(
+                    suggestion
+                  )
+                "
+              >
+                {{ suggestion }}
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (errorMessage()) {
+        <div class="chat-error">
+          <span>!</span>
+          {{ errorMessage() }}
+        </div>
+      }
+
+      @if (voiceError()) {
+        <div class="voice-error">
+          <span class="voice-error-icon">🎤</span>
+
+          <p>{{ voiceError() }}</p>
+
+          <button
+            type="button"
+            aria-label="Dismiss voice error"
+            (click)="dismissVoiceError()"
+          >
+            ×
+          </button>
+        </div>
+      }
+
+      @if (voiceStatus()) {
+        <div
+          class="voice-status"
+          [class.listening-status]="isListening()"
+          [class.speaking-status]="isSpeaking()"
+        >
+          @if (isListening()) {
+            <span class="voice-pulse"></span>
+          } @else if (isSpeaking()) {
+            <span class="voice-wave">
+              <i></i><i></i><i></i><i></i>
+            </span>
+          } @else {
+            <span>🔊</span>
+          }
+
+          <span>{{ voiceStatus() }}</span>
+        </div>
+      }
+
+      <footer class="message-input-area">
+        <div class="input-wrapper">
+          <textarea
+            [(ngModel)]="messageInput"
+            rows="1"
+            maxlength="1000"
+            placeholder="Type your message..."
+            aria-label="Chat message"
+            [disabled]="isSending()"
+            (keydown.enter)="sendMessage(); $event.preventDefault()"
+          ></textarea>
+
+          <div class="voice-actions">
+            <button
+              type="button"
+              class="voice-button mute-button"
+              [class.active]="isVoiceMuted()"
+              [disabled]="!voiceOutputSupported"
+              [attr.aria-label]="isVoiceMuted() ? 'Unmute AI voice' : 'Mute AI voice'"
+              [title]="isVoiceMuted() ? 'Unmute AI voice' : 'Mute AI voice'"
+              (click)="toggleVoiceMute()"
+            >
+              {{ isVoiceMuted() ? '🔇' : '🔊' }}
+            </button>
+
+            <button
+              type="button"
+              class="voice-button microphone-button"
+              [class.listening]="isListening()"
+              [disabled]="!voiceInputSupported || isSending()"
+              [attr.aria-label]="isListening() ? 'Stop listening' : 'Start voice input'"
+              [title]="voiceInputSupported ? (isListening() ? 'Stop listening' : 'Speak to AI') : 'Voice input is not supported in this browser'"
+              (click)="toggleListening()"
+            >
+              @if (isListening()) {
+                <span class="stop-icon"></span>
+              } @else {
+                <span class="microphone-icon">🎤</span>
+              }
+            </button>
+          </div>
+
+          <button
+            type="button"
+            class="send-button"
+            aria-label="Send message"
+            [disabled]="
+              !messageInput.trim() ||
+              isSending()
+            "
+            (click)="sendMessage()"
+          >
+            @if (isSending()) {
+              <span class="button-spinner"></span>
+            } @else {
+              <span>➜</span>
+            }
+          </button>
+        </div>
+
+        <div class="input-footer">
+          <span>
+            Type or tap 🎤 to speak
+          </span>
+
+          <span>
+            {{ messageInput.length }}/1000
+          </span>
+        </div>
+      </footer>
+    </section>
+  </main>
+</div>

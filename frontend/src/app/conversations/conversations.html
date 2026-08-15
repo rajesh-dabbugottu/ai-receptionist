@@ -1,0 +1,261 @@
+<div class="conversations-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Customer communication</p>
+      <h1>Conversations</h1>
+      <p class="page-description">
+        Review messages between customers and your AI receptionist.
+      </p>
+    </div>
+
+    <button type="button" class="refresh-button" [disabled]="isLoadingList()" (click)="refresh()">
+      <span [class.rotating]="isLoadingList()">↻</span>
+      {{ isLoadingList() ? 'Refreshing' : 'Refresh' }}
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+  <div class="error-alert">
+    <strong>!</strong>
+    {{ errorMessage() }}
+  </div>
+  }
+
+  <section class="conversation-panel">
+    <aside class="conversation-list">
+      <div class="list-header">
+        <div>
+          <h2>Messages</h2>
+          <span>
+            {{ filteredConversations().length }}
+            conversation(s)
+          </span>
+        </div>
+      </div>
+
+      <label class="search-box">
+        <span>⌕</span>
+
+        <input type="search" placeholder="Search conversations" [ngModel]="searchTerm()"
+          (ngModelChange)="updateSearch($event)" />
+      </label>
+
+      <div class="conversation-items">
+        @if (isLoadingList()) {
+        <div class="list-loading">
+          <div class="spinner"></div>
+          <p>Loading conversations...</p>
+        </div>
+        } @else if (
+        filteredConversations().length === 0
+        ) {
+        <div class="empty-list">
+          <div class="empty-icon">💬</div>
+          <strong>No conversations</strong>
+          <p>No customer conversations were found.</p>
+        </div>
+        } @else {
+        @for (
+        conversation of filteredConversations();
+        track conversation.conversation_id
+        ) {
+        <button type="button" class="conversation-item" [class.active]="
+                selectedConversationId() ===
+                conversation.conversation_id
+              " (click)="
+                openConversation(
+                  conversation.conversation_id
+                )
+              ">
+          <div class="customer-avatar">
+            {{
+            getInitials(
+            conversation.customer_name
+            )
+            }}
+          </div>
+
+          <div class="conversation-preview">
+            <div class="preview-heading">
+              <strong>
+                {{ conversation.customer_name }}
+              </strong>
+
+              <time>
+                {{
+                formatListTime(
+                conversation.updated_at
+                )
+                }}
+              </time>
+            </div>
+
+            <div class="preview-message">
+              {{ conversation.last_message }}
+            </div>
+
+            <div class="preview-footer">
+              <span class="status-badge" [class.appointment-status]="
+                      conversation.appointment_created
+                    ">
+                {{
+                conversation.appointment_created
+                ? 'Appointment created'
+                : conversation.status
+                }}
+              </span>
+            </div>
+          </div>
+        </button>
+        }
+        }
+      </div>
+    </aside>
+
+    <main class="chat-area">
+  @if (isLoadingMessages()) {
+    <div class="chat-loading">
+      <div class="spinner"></div>
+      <p>Loading messages...</p>
+    </div>
+  } @else {
+    @if (selectedConversation(); as conversation) {
+      <header class="chat-header">
+        <div class="chat-customer">
+          <div class="customer-avatar large">
+            {{
+              getInitials(
+                getCustomerName(
+                  conversation.conversation_id
+                )
+              )
+            }}
+          </div>
+
+          <div>
+            <h2>
+              {{
+                getCustomerName(
+                  conversation.conversation_id
+                )
+              }}
+            </h2>
+
+            <p>
+              Conversation ID:
+              {{
+                conversation.conversation_id.slice(0, 12)
+              }}...
+            </p>
+          </div>
+        </div>
+
+        <div class="conversation-meta">
+          <span class="intent-badge">
+            {{ conversation.intent }}
+          </span>
+
+          @if (conversation.appointment_created) {
+            <span class="booking-badge">
+              ✓ Appointment
+            </span>
+          }
+        </div>
+      </header>
+
+      <div class="messages-area">
+        <div class="conversation-start">
+          <span>Conversation started</span>
+        </div>
+
+        @for (
+          message of conversation.messages;
+          track message.id
+        ) {
+          <div
+            class="message-row"
+            [class.customer-row]="
+              isCustomer(message.sender)
+            "
+            [class.assistant-row]="
+              !isCustomer(message.sender)
+            "
+          >
+            @if (!isCustomer(message.sender)) {
+              <div class="message-avatar ai-avatar">
+                AI
+              </div>
+            }
+
+            <div
+              class="message-bubble"
+              [class.customer-bubble]="
+                isCustomer(message.sender)
+              "
+              [class.assistant-bubble]="
+                !isCustomer(message.sender)
+              "
+            >
+              <p>{{ message.message }}</p>
+
+              <time>
+                {{ formatDateTime(message.created_at) }}
+              </time>
+            </div>
+
+            @if (isCustomer(message.sender)) {
+              <div
+                class="message-avatar customer-message-avatar"
+              >
+                C
+              </div>
+            }
+          </div>
+        }
+
+        @if (conversation.messages.length === 0) {
+          <div class="no-messages">
+            <div>💬</div>
+            <h3>No messages available</h3>
+            <p>
+              This conversation does not contain messages.
+            </p>
+          </div>
+        }
+      </div>
+
+      <footer class="chat-footer">
+        <div>
+          <strong>AI-managed conversation</strong>
+          <span>
+            Administrators can currently review messages.
+          </span>
+        </div>
+
+        @if (conversation.appointment_id) {
+          <div class="appointment-reference">
+            Appointment:
+            <strong>
+              {{
+                conversation.appointment_id.slice(0, 10)
+              }}
+            </strong>
+          </div>
+        }
+      </footer>
+    } @else {
+      <div class="select-conversation">
+        <div class="select-icon">💬</div>
+
+        <h2>Select a conversation</h2>
+
+        <p>
+          Choose a customer conversation from the list
+          to view its messages.
+        </p>
+      </div>
+    }
+  }
+</main>
+  </section>
+</div>

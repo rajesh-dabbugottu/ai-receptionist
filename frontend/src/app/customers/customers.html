@@ -1,0 +1,114 @@
+<div class="customers-page">
+  <header class="page-header">
+    <div>
+      <a class="back-link" routerLink="/admin">← Dashboard</a>
+      <p class="eyebrow">Customer management</p>
+      <h1>Customers</h1>
+      <p class="description">
+        View customer contact details and appointment history.
+      </p>
+    </div>
+
+    <button type="button" class="refresh-button" [disabled]="isLoading()" (click)="loadCustomers()">
+      <span [class.rotating]="isLoading()">↻</span>
+      {{ isLoading() ? 'Refreshing' : 'Refresh' }}
+    </button>
+  </header>
+
+  @if (errorMessage()) {
+    <div class="alert error-alert">
+      <strong>!</strong>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <section class="stats-grid">
+    <article class="stat-card">
+      <span>Total customers</span>
+      <strong>{{ customers().length }}</strong>
+      <p>Saved customer profiles</p>
+    </article>
+
+    <article class="stat-card">
+      <span>Total bookings</span>
+      <strong>{{ totalAppointments() }}</strong>
+      <p>Appointments linked to customers</p>
+    </article>
+  </section>
+
+  <section class="customers-card">
+    <div class="card-toolbar">
+      <div>
+        <h2>Customer directory</h2>
+        <p>{{ filteredCustomers().length }} customer(s)</p>
+      </div>
+
+      <label class="search-box">
+        <span>⌕</span>
+        <input
+          type="search"
+          placeholder="Search name, phone or email"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="updateSearch($event)"
+        />
+      </label>
+    </div>
+
+    @if (isLoading()) {
+      <div class="state-card">
+        <div class="spinner"></div>
+        <p>Loading customers...</p>
+      </div>
+    } @else if (filteredCustomers().length === 0) {
+      <div class="state-card">
+        <div class="empty-icon">👥</div>
+        <h3>No customers found</h3>
+        <p>Customers will appear after an appointment is created.</p>
+      </div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Appointments</th>
+              <th>Last appointment</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (customer of filteredCustomers(); track customer.id) {
+              <tr>
+                <td>
+                  <div class="customer-cell">
+                    <div class="avatar">{{ getInitials(customer.name) }}</div>
+                    <div>
+                      <strong>{{ customer.name }}</strong>
+                      <span>Customer ID: {{ customer.id.slice(0, 10) }}...</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="contact-cell">
+                    <span>{{ customer.phone || 'No phone' }}</span>
+                    <small>{{ customer.email || 'No email provided' }}</small>
+                  </div>
+                </td>
+                <td>
+                  <span class="count-badge">{{ customer.total_appointments }}</span>
+                </td>
+                <td>{{ formatDate(customer.last_appointment_date) }}</td>
+                <td class="action-cell">
+                  <a class="view-button" [routerLink]="['/admin/customers', customer.id]">
+                    View profile
+                  </a>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+</div>
