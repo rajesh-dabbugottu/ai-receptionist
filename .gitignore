@@ -1,0 +1,46 @@
+# -------------------------
+# Secrets
+# -------------------------
+.env
+.env.*
+*.env
+
+firebase-service-account.json
+**/firebase-service-account.json
+
+# -------------------------
+# Python
+# -------------------------
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+.pytest_cache/
+.mypy_cache/
+
+# -------------------------
+# Angular / Node
+# -------------------------
+node_modules/
+dist/
+.angular/
+.cache/
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -------------------------
+# IDE
+# -------------------------
+.vscode/
+.idea/
+
+# -------------------------
+# OS
+# -------------------------
+.DS_Store
+Thumbs.db
