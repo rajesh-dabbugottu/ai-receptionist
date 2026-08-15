@@ -38,7 +38,7 @@ interface CustomersResponse {
 })
 export class CustomersComponent implements OnInit {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://127.0.0.1:8000/api/customers';
+  private readonly apiUrl = 'https://ai-receptionist-a0b0.onrender.com/api/customers';
   private readonly businessId = 'demo_business_001';
 
   customers = signal<Customer[]>([]);

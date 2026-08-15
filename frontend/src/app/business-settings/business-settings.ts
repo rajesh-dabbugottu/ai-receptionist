@@ -33,7 +33,7 @@ interface ServicesResponse {
 })
 export class BusinessSettingsComponent implements OnInit {
   private readonly apiBaseUrl =
-    'http://127.0.0.1:8000/api';
+    'https://ai-receptionist-a0b0.onrender.com/api';
 
   readonly businessId = 'demo_business_001';
 

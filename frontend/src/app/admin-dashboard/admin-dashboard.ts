@@ -55,7 +55,7 @@ export class AdminDashboardComponent implements OnInit {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    'http://127.0.0.1:8000/api/appointments';
+    'https://ai-receptionist-a0b0.onrender.com/api/appointments';
 
   appointments = signal<Appointment[]>([]);
   searchTerm = signal('');

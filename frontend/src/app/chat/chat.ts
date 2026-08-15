@@ -60,7 +60,7 @@ export class ChatComponent implements OnDestroy {
   messagesContainer?: ElementRef<HTMLDivElement>;
 
   private readonly apiUrl =
-    'http://127.0.0.1:8000/api/chat';
+    'https://ai-receptionist-a0b0.onrender.com/api/chat';
 
   // Must exactly match the Firestore business document ID.
   businessId = 'demo_business_001';
